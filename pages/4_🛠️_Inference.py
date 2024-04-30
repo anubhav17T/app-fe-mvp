@@ -6,6 +6,9 @@ from src.helper.endpoint import COMPLETED_TRAINING_JOBS
 if "inference" not in st.session_state:
     st.session_state["inference"] = {}
 
+if "training_info" not in st.session_state:
+    st.session_state["training_info"] = {}
+
 
 def model():
     # Just for demonstration, replace with your actual model
@@ -24,7 +27,35 @@ def model():
     else:
         for i in x["data"]:
             model_.append(i["?column?"])
+            st.session_state["training_info"].update({i["?column?"]: i["id"]})
         return model_
+
+
+@st.cache_data
+def inference_on_trained_model(message, training_id):
+    random_uuid = uuid.uuid4()
+    uuid_string = str(random_uuid).replace('-', '')
+    random_string = uuid_string[:12]
+    response = requests.post("https://mlbe.rekogniz.com/v1/concept/",
+                             json={"id": str(st.session_state["login_information"]["response_data"]["data"]["id"]),
+                                   "training_id": training_id,
+                                   "request_id": random_string,
+                                   "inference_schema": {"prompt": message,
+                                                        "negative_prompt": "",
+                                                        "resolution": "1024"
+                                                        }
+                                   }, verify=False)
+    if response.status_code == 422:
+        st.error("Internal Server Error")
+    elif response.status_code != 200:
+        st.error("Internal Server Error")
+    x = response.json()
+    data = x["data"]["image_path"]
+    if data:
+        st.session_state["inference"].update({random_string: {"message": message,
+                                                              "images": data
+                                                              }})
+    return data
 
 
 @st.cache_data
@@ -39,7 +70,7 @@ def make_inference(message):
                                                         "negative_prompt": "",
                                                         "resolution": "1024"
                                                         }
-                                   },verify=False)
+                                   }, verify=False)
     if response.status_code == 422:
         st.error("Internal Server Error")
     elif response.status_code != 200:
@@ -84,6 +115,18 @@ def inference():
                                     st.image(data[1], caption='Image 2')
                                 with col3:
                                     st.image(data[2], caption='Image 2')
+                            progress_bar.progress(100)
+                        else:
+                            # trainined models
+                            inferred_data = inference_on_trained_model(message=message, training_id=st.session_state["training_info"][select])
+                            if inferred_data:
+                                col1, col2, col3 = st.columns(3)
+                                with col1:
+                                    st.image(inferred_data[0], caption='Image 1')
+                                with col2:
+                                    st.image(inferred_data[1], caption='Image 2')
+                                with col3:
+                                    st.image(inferred_data[2], caption='Image 2')
                             progress_bar.progress(100)
         st.subheader("History:")
         for key, value in st.session_state["inference"].items():
