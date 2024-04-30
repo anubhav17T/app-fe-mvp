@@ -16,4 +16,4 @@ EXPOSE 8501
 ENV STREAMLIT_SERVER_PORT=8501
 
 # Run app.py when the container launches
-CMD ["streamlit", "run", "1_Homepage.py", "--theme.base='light'"]
+CMD ["streamlit", "run", "1_Homepage.py", "--theme.base=light"]
