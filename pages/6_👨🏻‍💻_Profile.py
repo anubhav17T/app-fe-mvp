@@ -1,5 +1,7 @@
 import streamlit as st
 import requests
+
+from src.helper.endpoint import USER_PROFILE, USER_CHANGE_PASSWORD
 from src.helper.user_helper import check_password_strength
 
 
@@ -40,7 +42,7 @@ def profile():
                            "Authorization": "Bearer {}".format(
                                st.session_state["login_information"]["response_data"]["access_token"])
                            }
-                response = requests.patch("http://localhost:8000/api/v1/user/profile",
+                response = requests.patch(USER_PROFILE,
                                           json={"first_name": first_name,
                                                 "last_name": last_name
                                                 }, headers=headers
@@ -104,7 +106,7 @@ def change_password():
                                "Authorization": "Bearer {}".format(
                                    st.session_state["login_information"]["response_data"]["access_token"])
                                }
-                    response = requests.post("http://localhost:8000/api/v1/user/change-password",
+                    response = requests.post(USER_CHANGE_PASSWORD,
                                               json={"current_password": current_password,
                                                     "new_password": new_password,
                                                     "confirm_password": confirm_password
