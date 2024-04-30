@@ -72,4 +72,4 @@ jobs:
 
 
       - name: Force rollout
-        run: kubectl rollout restart deployment rekogniz-app-backend-user -n dev-backend
+        run: kubectl rollout restart deployment rekogniz-app-client-user -n dev-backend
