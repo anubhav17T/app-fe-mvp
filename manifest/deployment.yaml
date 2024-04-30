@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rekogniz-app-client-user
+  namespace: dev-backend
+  labels:
+    app: rekogniz-app-client-user
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rekogniz-app-client-user
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 3
+  template:
+    metadata:
+      labels:
+        app: rekogniz-app-client-user
+    spec:
+      containers:
+        - name: rekogniz-app-client-user
+          image: anubhavv17t/rekogniz-app-client-user
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8501
