@@ -110,7 +110,7 @@ def past_training_page():
 
 def training_page():
     # Create two columns to arrange widgets horizontally
-    check_wait_time = requests.get("https://mlbe.rekogniz.com/v1/wait-time")
+    check_wait_time = requests.get("https://mlbe.rekogniz.com/v1/wait-time",verify=False)
     check_wait_time = check_wait_time.json()
 
     if 10 <= check_wait_time["data"] <= 20:

@@ -39,7 +39,7 @@ def make_inference(message):
                                                         "negative_prompt": "",
                                                         "resolution": "1024"
                                                         }
-                                   })
+                                   },verify=False)
     if response.status_code == 422:
         st.error("Internal Server Error")
     elif response.status_code != 200:

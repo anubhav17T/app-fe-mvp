@@ -28,7 +28,7 @@ def login():
                 if not success:
                     st.error("Please provide Email or Password")
                 else:
-                    response = requests.post("http://af18c1ae21c8a449d973b300b323f120-1681068879.ap-south-1.elb.amazonaws.com/api/v1/user/login",
+                    response = requests.post(LOGIN_ENDPOINT,
                                              data={"username": email.lower(), "password": password}, headers=headers)
                     x = response.json()
                     if response.status_code != 200:
