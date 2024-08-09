@@ -10,6 +10,7 @@ if "training_info" not in st.session_state:
     st.session_state["training_info"] = {}
 
 
+
 def model():
     # Just for demonstration, replace with your actual model
     # check for training jobs that have been completed + appended with custom inference
@@ -37,6 +38,7 @@ def inference_on_trained_model(message, training_id):
     uuid_string = str(random_uuid).replace('-', '')
     random_string = uuid_string[:12]
     response = requests.post("https://mlbe.rekogniz.com/v1/concept/",
+                             headers={"verification-key":"cmVrb0duaXpUZWNobm9sb2dpZXNQcmlWYVRlTGlNZXRlZCMjIzEyMzQwOTY4OTY="},
                              json={"id": str(st.session_state["login_information"]["response_data"]["data"]["id"]),
                                    "training_id": training_id,
                                    "request_id": random_string,
@@ -64,6 +66,8 @@ def make_inference(message):
     uuid_string = str(random_uuid).replace('-', '')
     random_string = uuid_string[:12]
     response = requests.post("https://mlbe.rekogniz.com/v1/inference/",
+                             headers={
+                                 "verification-key": "cmVrb0duaXpUZWNobm9sb2dpZXNQcmlWYVRlTGlNZXRlZCMjIzEyMzQwOTY4OTY="},
                              json={"id": str(st.session_state["login_information"]["response_data"]["data"]["id"]),
                                    "request_id": random_string,
                                    "inference_schema": {"prompt": message,
@@ -71,10 +75,13 @@ def make_inference(message):
                                                         "resolution": "1024"
                                                         }
                                    }, verify=False)
+    st.info(response.status_code)
     if response.status_code == 422:
-        st.error("Internal Server Error")
+        st.error("Something went wrong at our end, please try again later")
+        return False
     elif response.status_code != 200:
-        st.error("Internal Server Error")
+        st.error("Something went wrong at our end, please try again later")
+        return False
     x = response.json()
     data = x["data"]["image_path"]
     if data:
@@ -93,7 +100,6 @@ def inference():
             st.switch_page("pages/2_📲_Login.py")
     else:
         select = st.selectbox(label="Select Model", options=model(), help="Model")
-        print(select)
         if select:
             with st.expander("Image Generation", expanded=False):
                 # Implementation of chat goes here
@@ -117,7 +123,8 @@ def inference():
                                     st.image(data[2], caption='Image 2')
                             progress_bar.progress(100)
                         else:
-                            # trainined models
+                            #find information regarding the training job
+                            st.info("When using custom model trained on dataset please define your Unique Identifier")
                             inferred_data = inference_on_trained_model(message=message, training_id=st.session_state["training_info"][select])
                             if inferred_data:
                                 col1, col2, col3 = st.columns(3)

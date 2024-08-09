@@ -1,4 +1,6 @@
 import re
+import random
+import string
 
 
 def check_user_metadata(data: dict):
@@ -15,10 +17,17 @@ def check_password_strength(password):
     return True
 
 
-
 def check(email, password):
     if len(email) == 0:
         return False
     elif len(password) == 0:
         return False
     return True
+
+
+def generate_random_word():
+    letters_and_numbers = string.ascii_letters + string.digits
+    return ''.join(random.choice(letters_and_numbers) for _ in range(4))
+
+
+# Generate 10 random words

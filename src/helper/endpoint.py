@@ -17,9 +17,6 @@ USER_CHANGE_PASSWORD = "http://af18c1ae21c8a449d973b300b323f120-1681068879.ap-so
 
 
 
-
-
-#
 # LOGIN_ENDPOINT = "http://localhost:8000/api/v1/user/login"
 # REGISTER_ENDPOINT = "http://localhost:8000/api/v1/user/register"
 # INPROGRESS_TRAINING_ENDPOINT = "http://localhost:8000/api/v1/user/training/inprogress/{}"
@@ -31,3 +28,7 @@ USER_CHANGE_PASSWORD = "http://af18c1ae21c8a449d973b300b323f120-1681068879.ap-so
 # USER_PROFILE = "http://localhost:8000/api/v1/user/profile"
 # USER_CHANGE_PASSWORD = "http://localhost:8000/api/v1/user/change-password"
 # LOCALHOST = "localhost:8000"
+
+
+
+
