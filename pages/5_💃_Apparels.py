@@ -29,9 +29,10 @@ def fashion_model_try():
         if btn:
             st.switch_page("pages/2_📲_Login.py")
     else:
-        select = st.selectbox(label="Select Generation Type", options=["Fashion Model", "Background Replacement"],
+        select = st.selectbox(label="Select Generation Type",
+                              options=["Simple Clothes", "Background Replacement", "Printed Clothes"],
                               help="Model")
-        if select == "Fashion Model":
+        if select == "Simple Clothes":
             with st.form("Apparel Try On"):
                 col1, col2 = st.columns(2)
                 # Text input for training job name
@@ -41,8 +42,8 @@ def fashion_model_try():
                     ethnicity = st.selectbox(label="Select Model Ethnicity", options=["African", "American", "Asian"])
                 with col2:
                     garment_type = st.text_input("Garment Type",
-                                           placeholder="a background with pebblles and mountain",
-                                           help="What you want to generate in background")
+                                                 placeholder="a background with pebblles and mountain",
+                                                 help="What you want to generate in background")
                     images = st.file_uploader("Upload Images", accept_multiple_files=True,
                                               type=['png', 'jpg', 'jpeg'],
                                               help="Please provide 1 images of your outfit")
@@ -60,7 +61,8 @@ def fashion_model_try():
                         if not upload["success"]:
                             st.error("Something went wrong please try again later")
                             st.stop()
-                        response = requests.post("http://216.48.187.54:8002/v1/cloth",
+                        print(upload["data"]["s3_uri"])
+                        response = requests.post("http://194.68.245.64:22095/v1/upper-body/simple/cloth",
                                                  headers={
                                                      "verification-key": "cmVrb0duaXpUZWNobm9sb2dpZXNQcmlWYVRlTGlNZXRlZCMjIzEyMzQwOTY4OTY="},
                                                  json={"id": str(
@@ -79,12 +81,60 @@ def fashion_model_try():
                         x = response.json()
                         data = x["data"]["image_path"]
                         col1, col2 = st.columns(2)
+                        print(x)
                         with col1:
                             st.image(images)
                         with col2:
                             st.image(data)
 
+        elif select == "Printed Clothes":
+            with st.form("Printed clothes Try On"):
+                col1, col2 = st.columns(2)
+                with col1:
+                    ethnicity = st.selectbox(label="Select Model Ethnicity", options=["American", "Asian"])
+                    prompt = "a photography of a model"
+                with col2:
+                    images = st.file_uploader("Upload Images", accept_multiple_files=True,
+                                              type=['png', 'jpg', 'jpeg'],
+                                              help="Please provide 1 images of your outfit")
 
+                sub = st.form_submit_button("Printed clothes Try On")
+                if sub:
+                    if ethnicity is None:
+                        st.error("Please provide data")
+                        st.stop()
+                    else:
+                        file_names = {}
+                        for file in images:
+                            file_names[f"files"] = (file.name, file.getvalue(), file.type)
+                        upload = image_upload(file_names)
+                        if not upload["success"]:
+                            st.error("Something went wrong please try again later")
+                            st.stop()
+                        print(st.session_state["login_information"]["response_data"]["data"]["id"])
+                        response = requests.post("http://194.68.245.64:22095/v1/upper-body/designer/cloth",
+                                                 headers={
+                                                     "verification-key": "cmVrb0duaXpUZWNobm9sb2dpZXNQcmlWYVRlTGlNZXRlZCMjIzEyMzQwOTY4OTY="},
+                                                 json={"id": str(
+                                                     st.session_state["login_information"]["response_data"]["data"][
+                                                         "id"]),
+                                                     "s3_path": upload["data"]["s3_uri"],
+                                                     "prompt": prompt,
+                                                 }, verify=False)
+                        if response.status_code == 422:
+                            st.error("Something went wrong at our end, please try again later")
+                            return False
+                        elif response.status_code != 200:
+                            st.error("Something went wrong at our end, please try again later")
+                            return False
+                        x = response.json()
+                        print(x)
+                        data = x["data"]["image_path"]
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            st.image(images)
+                        with col2:
+                            st.image(data)
 
         elif select == "Background Replacement":
             with st.form("Start Background Replacement"):
@@ -92,7 +142,8 @@ def fashion_model_try():
                 # Text input for training job name
                 with col1:
                     object_type = st.text_input("Object Type", placeholder="headphone", help="Type of the object")
-                    object_text = st.selectbox("Text in object", options=[False,True], help="Does your product consist of text?")
+                    object_text = st.selectbox("Text in object", options=[False, True],
+                                               help="Does your product consist of text?")
                 with col2:
                     background_prompt = st.text_input("Background Prompt",
                                                       placeholder="a background with pebblles and mountain",
@@ -123,7 +174,7 @@ def fashion_model_try():
                                                  "s3_path": upload["data"]["s3_uri"],
                                                  "prompt": object_type,
                                                  "bg_prompt": background_prompt,
-                                                 "superimpose":object_text
+                                                 "superimpose": object_text
                                              }, verify=False)
                     if response.status_code == 422:
                         st.error("Something went wrong at our end, please try again later")

@@ -12,7 +12,7 @@ COMPLETED_TRAINING_JOBS = "http://af18c1ae21c8a449d973b300b323f120-1681068879.ap
 USER_PROFILE = "http://af18c1ae21c8a449d973b300b323f120-1681068879.ap-south-1.elb.amazonaws.com/api/v1/user/profile"
 
 USER_CHANGE_PASSWORD = "http://af18c1ae21c8a449d973b300b323f120-1681068879.ap-south-1.elb.amazonaws.com/api/v1/user/change-password"
-
+#
 
 
 
