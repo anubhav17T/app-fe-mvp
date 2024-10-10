@@ -7,6 +7,9 @@ from src.helper.endpoint import INPROGRESS_TRAINING_ENDPOINT, IMAGE_UPLOAD_ENDPO
 from src.helper.user_helper import generate_random_word
 from PIL import Image
 from streamlit_drawable_canvas import st_canvas
+import os
+
+
 def check_inprogress_training(user_id):
     response = requests.get(INPROGRESS_TRAINING_ENDPOINT.format(user_id))
     x = response.json()
@@ -17,14 +20,19 @@ def check_inprogress_training(user_id):
     else:
         if x["data"] is None:
             return True
+
+
 def image_upload(files, is_logo_exist: dict, dataset_name: str):
     headers = {'accept': 'application/json',
                "Authorization": "Bearer {}".format(
                    st.session_state["login_information"]["response_data"]["access_token"])
                }
+    print("here1")
+
     response = requests.post(IMAGE_UPLOAD_ENDPOINT,
                              headers=headers,
-                             files=files)
+                             files=[("files", (name, content, content_type)) for name, content, content_type in files])
+    print(response)
     x = response.json()
     if response.status_code == 422:
         return {"success": False, "data": {}}
@@ -42,6 +50,8 @@ def image_upload(files, is_logo_exist: dict, dataset_name: str):
                                                  "bucket": x["bucket"],
                                                  "coordinates": {}}]})
         return {"success": True, "data": x}
+
+
 def check_training(user_id, job_name):
     response = requests.get(CHECK_TRAINING_ENDPOINT.format(user_id, job_name))
     x = response.json()
@@ -52,6 +62,8 @@ def check_training(user_id, job_name):
     else:
         if x["data"] is None:
             return True
+
+
 def start_training(metadata):
     # in this we are only creating one and only one dataset at a time
     headers = {'accept': 'application/json',
@@ -76,7 +88,6 @@ def start_training(metadata):
                                               }
                                    }
                              )
-    print("HERERER")
     x = response.json()
     print(x)
     if response.status_code == 422:
@@ -85,13 +96,18 @@ def start_training(metadata):
         return {"success": False, "data": {}}
     else:
         return x
+
+
 def cooling_highlight(val):
     color = '#ACE5EE' if val else 'white'
     return f'background-color: {color}'
+
+
 def fetch_trained_model_list():
     import pandas as pd
     response = requests.get(FETCH_TRAINING.format(
         st.session_state["login_information"]["response_data"]["data"]["id"]))
+
     if response.status_code == 422:
         st.error("Internal Server Error")
     elif response.status_code != 200:
@@ -104,8 +120,12 @@ def fetch_trained_model_list():
                  hide_index=True,
                  width=1100
                  )
+
+
 def past_training_page():
     fetch_trained_model_list()
+
+
 def check_user_verification():
     headers = {'accept': 'application/json',
                'Content-Type': 'application/json',
@@ -123,6 +143,8 @@ def check_user_verification():
             return False
         else:
             return True
+
+
 def training_page():
     # Create two columns to arrange widgets horizontally
     # check_wait_time = requests.get("https://mlbe.rekogniz.com/v1/wait-time",
@@ -137,6 +159,7 @@ def training_page():
     #     st.success("No waiting time for training job 😄")
     # else:
     #     st.warning("Current training wait time is greater than 25 minutes 🤷")
+
     select = st.selectbox(label="Proceed with training", options=["Training", "Background Replacement", "Apparels"],
                           index=None)
     if select == "Training":
@@ -164,6 +187,7 @@ def training_page():
                                   help="Unique and short identifier to describe images", disabled=True)
                     purpose_training = st.multiselect("Model will be used for",
                                                       options=["Professional", "Random", "Rendering"])
+
                 submit_ = st.form_submit_button("Start Training")
                 if submit_:
                     if len(training_job_name) == 0 or len(object_type) == 0:
@@ -204,13 +228,30 @@ def training_page():
                         else:
                             st.success("Training Started Successfully,to be completed at {}".format(
                                 start_training_job["data"]["end_time"]))
+
+
 def dataset():
     # Only one dataset will exist in the upload at a time
+    st.info("Please upload it starting with the front view image of the training object.")
+    col1, col2, col3 = st.columns(3)
+    current_dir = os.getcwd()
+    image1 = current_dir + "/pages/image_7.jpeg"
+    image2 = current_dir + "/pages/image_8.jpeg"
+    image3 = current_dir + "/pages/image_13.jpeg"
+    image4 = current_dir + "/pages/image_18.jpeg"
+
+    with col1:
+        st.image(image1, caption="Front View", width=200)
+        st.image(image2, caption="Image 2", width=200)
+    with col2:
+        st.image(image3, caption="Image 3", width=200)
+        st.image(image4, caption="Image 4", width=200)
     st.warning("Please tick the box if your products need fine detailing and have logos")
     sel = st.checkbox("Does your product have logo?", help="We need to annotate images for better"
                                                            "training of logo")
     images = st.file_uploader("Upload Images", accept_multiple_files=True,
                               type=['png', 'jpg', 'jpeg'], help="Please provide 4-8 images")
+    print(images)
     dataset_name = st.text_input("Please enter the dataset name")
     check = []
     if "upload" in st.session_state.keys():
@@ -268,22 +309,26 @@ def dataset():
             if dataset_name is not None and dataset_name in check:
                 st.error("Dataset name already exist")
                 st.stop()
-            files_dict = {}
+            files = []
             if len(images) <= 3:
                 st.error("Please provide 4/5 images")
                 st.stop()
+            print("-------here----")
             for file in images:
-                files_dict[f"files"] = (file.name, file.getvalue(), file.type)
-            if files_dict.keys():
+                files.append((file.name, file.getvalue(), file.type))
+            if files:
                 check = st.button("Upload Files")
                 if check:
-                    success_file_upload = image_upload(files=files_dict, is_logo_exist={}, dataset_name=dataset_name)
+                    success_file_upload = image_upload(files=files, is_logo_exist={}, dataset_name=dataset_name)
                     if not success_file_upload["success"]:
                         st.error("OOPS! Something went wrong,Please try again later")
                         st.stop()
                     else:
-                        st.write(st.session_state)
+                        st.success("Your files has been uploaded successfully")
+
                     # redirect to training page
+
+
 def container():
     x = st.radio(label="Please Select Option", options=["Trained Models", "Create Experiment", "Make Dataset"],
                  horizontal=True,
@@ -293,6 +338,7 @@ def container():
             st.error("Please Log in first")
         else:
             training_page()
+
     elif x == "Make Dataset":
         if "login_information" not in st.session_state.keys():
             st.error("Please Log in first")
@@ -303,4 +349,6 @@ def container():
             st.error("Please Log in first")
         else:
             past_training_page()
+
+
 container()
