@@ -3,6 +3,8 @@ import streamlit as st
 import requests
 
 from src.helper.endpoint import IMAGE_UPLOAD_ENDPOINT
+from src.helper.ml_pod_helper import machine_learning_pod
+
 
 
 def image_upload(files):
@@ -62,7 +64,13 @@ def fashion_model_try():
                             st.error("Something went wrong please try again later")
                             st.stop()
                         print(upload["data"]["s3_uri"])
-                        response = requests.post("http://194.68.245.64:22095/v1/upper-body/simple/cloth",
+                        # machine_learning_pod_address = machine_learning_pod()
+                        machine_learning_pod_address = "69.30.85.26:22165"
+
+                        if machine_learning_pod_address == "":
+                            st.error("Service Not Available, Please try again later")
+                            st.stop()
+                        response = requests.post("http://{}/v1/upper-body/simple/cloth".format(machine_learning_pod_address),
                                                  headers={
                                                      "verification-key": "cmVrb0duaXpUZWNobm9sb2dpZXNQcmlWYVRlTGlNZXRlZCMjIzEyMzQwOTY4OTY="},
                                                  json={"id": str(
@@ -112,7 +120,13 @@ def fashion_model_try():
                             st.error("Something went wrong please try again later")
                             st.stop()
                         print(st.session_state["login_information"]["response_data"]["data"]["id"])
-                        response = requests.post("http://194.68.245.64:22095/v1/upper-body/designer/cloth",
+                        # machine_learning_pod_address = machine_learning_pod()
+                        machine_learning_pod_address = "69.30.85.26:22165"
+                        print(machine_learning_pod_address)
+                        if machine_learning_pod_address == "":
+                            st.error("Service Not Available, Please try again later")
+                            st.stop()
+                        response = requests.post("http://{}/v1/upper-body/designer/cloth".format(machine_learning_pod_address),
                                                  headers={
                                                      "verification-key": "cmVrb0duaXpUZWNobm9sb2dpZXNQcmlWYVRlTGlNZXRlZCMjIzEyMzQwOTY4OTY="},
                                                  json={"id": str(
@@ -166,7 +180,12 @@ def fashion_model_try():
                     if not upload["success"]:
                         st.error("Something went wrong please try again later")
                         st.stop()
-                    response = requests.post("http://216.48.187.54:8002/v1/custom_background",
+                    # machine_learning_pod_address = machine_learning_pod()
+                    machine_learning_pod_address = "69.30.85.26:22165"
+                    if machine_learning_pod_address == "":
+                        st.error("Service Not Available, Please try again later")
+                        st.stop()
+                    response = requests.post("http://{}/v1/custom_background".format(machine_learning_pod_address),
                                              headers={
                                                  "verification-key": "cmVrb0duaXpUZWNobm9sb2dpZXNQcmlWYVRlTGlNZXRlZCMjIzEyMzQwOTY4OTY="},
                                              json={"id": str(
@@ -189,6 +208,5 @@ def fashion_model_try():
                         st.image(images, caption=background_prompt)
                     with col2:
                         st.image(data[0], caption=background_prompt)
-
 
 fashion_model_try()
