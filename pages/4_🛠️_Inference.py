@@ -42,7 +42,7 @@ def inference_on_trained_model(message, training_id):
     response = requests.get("http://af18c1ae21c8a449d973b300b323f120-1681068879.ap-south-1.elb.amazonaws.com/api/v1/user/pod-address")
     machine_learning_pod_address = response.json()
     machine_learning_pod_address = machine_learning_pod_address["address"]
-    response = requests.post(f"http://{machine_learning_pod_address}/v1/concept/",
+    response = requests.post(f"http://{machine_learning_pod_address}/v1/concept-inference/",
                              headers={"verification-key":"cmVrb0duaXpUZWNobm9sb2dpZXNQcmlWYVRlTGlNZXRlZCMjIzEyMzQwOTY4OTY="},
                              json={"id": str(st.session_state["login_information"]["response_data"]["data"]["id"]),
                                    "training_id": training_id,

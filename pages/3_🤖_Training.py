@@ -89,7 +89,6 @@ def start_training(metadata):
                                    }
                              )
     x = response.json()
-    print(x)
     if response.status_code == 422:
         return {"success": False, "data": {}}
     elif response.status_code != 200:
