@@ -2,13 +2,14 @@ import uuid
 import streamlit as st
 import requests
 from src.helper.endpoint import COMPLETED_TRAINING_JOBS
-from src.helper.ml_pod_helper import pod_address
 
 if "inference" not in st.session_state:
     st.session_state["inference"] = {}
 
 if "training_info" not in st.session_state:
     st.session_state["training_info"] = {}
+
+
 
 
 
@@ -38,7 +39,9 @@ def inference_on_trained_model(message, training_id):
     random_uuid = uuid.uuid4()
     uuid_string = str(random_uuid).replace('-', '')
     random_string = uuid_string[:12]
-    machine_learning_pod_address = pod_address()
+    response = requests.get("http://af18c1ae21c8a449d973b300b323f120-1681068879.ap-south-1.elb.amazonaws.com/api/v1/user/pod-address")
+    machine_learning_pod_address = response.json()
+    machine_learning_pod_address = machine_learning_pod_address["address"]
     response = requests.post(f"http://{machine_learning_pod_address}/v1/concept/",
                              headers={"verification-key":"cmVrb0duaXpUZWNobm9sb2dpZXNQcmlWYVRlTGlNZXRlZCMjIzEyMzQwOTY4OTY="},
                              json={"id": str(st.session_state["login_information"]["response_data"]["data"]["id"]),
@@ -67,7 +70,10 @@ def make_inference(message):
     random_uuid = uuid.uuid4()
     uuid_string = str(random_uuid).replace('-', '')
     random_string = uuid_string[:12]
-    machine_learning_pod_address = pod_address()
+    response = requests.get(
+        "http://af18c1ae21c8a449d973b300b323f120-1681068879.ap-south-1.elb.amazonaws.com/api/v1/user/pod-address")
+    machine_learning_pod_address = response.json()
+    machine_learning_pod_address = machine_learning_pod_address["address"]
     response = requests.post(f"https://{machine_learning_pod_address}/v1/inference/",
                              headers={
                                  "verification-key": "cmVrb0duaXpUZWNobm9sb2dpZXNQcmlWYVRlTGlNZXRlZCMjIzEyMzQwOTY4OTY="},

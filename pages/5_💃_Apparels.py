@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 from src.helper.endpoint import IMAGE_UPLOAD_ENDPOINT
-from src.helper.ml_pod_helper import pod_address
 
 
 def image_upload(files):
@@ -61,8 +60,10 @@ def fashion_model_try():
                             st.error("Something went wrong please try again later")
                             st.stop()
                         print(upload["data"]["s3_uri"])
-                        machine_learning_pod_address = pod_address()
-                        # machine_learning_pod_address = "69.30.85.26:22165"
+                        response = requests.get(
+                            "http://af18c1ae21c8a449d973b300b323f120-1681068879.ap-south-1.elb.amazonaws.com/api/v1/user/pod-address")
+                        machine_learning_pod_address = response.json()
+                        machine_learning_pod_address = machine_learning_pod_address["address"]
                         if machine_learning_pod_address == "":
                             st.error("Service Not Available, Please try again later")
                             st.stop()
@@ -176,7 +177,10 @@ def fashion_model_try():
                     if not upload["success"]:
                         st.error("Something went wrong please try again later")
                         st.stop()
-                    machine_learning_pod_address = pod_address()
+                    response = requests.get(
+                        "http://af18c1ae21c8a449d973b300b323f120-1681068879.ap-south-1.elb.amazonaws.com/api/v1/user/pod-address")
+                    machine_learning_pod_address = response.json()
+                    machine_learning_pod_address = machine_learning_pod_address["address"]
                     if machine_learning_pod_address == "":
                         st.error("Service Not Available, Please try again later")
                         st.stop()
