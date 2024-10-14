@@ -1,16 +1,9 @@
 import runpod
-import os
-
-# Set your API key
 runpod.api_key = "6MRIL8BDMAUTBIMX6JGVOGJCMGR32PYXI7MHR229"
 
-# Get all pods
-pods = runpod.get_pods()
-
-
-# Print the ID of each pod
 
 def get_address():
+    pods = runpod.get_pods()
     """This function fetch runpod ip address """
     add = ""
     for pod in pods:
@@ -22,5 +15,3 @@ def get_address():
         return add
     else:
         return False
-
-
