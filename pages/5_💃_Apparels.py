@@ -1,10 +1,7 @@
-import uuid
 import streamlit as st
 import requests
-
 from src.helper.endpoint import IMAGE_UPLOAD_ENDPOINT
-from src.helper.ml_pod_helper import machine_learning_pod
-
+from src.helper.ml_pod_helper import get_address
 
 
 def image_upload(files):
@@ -64,9 +61,8 @@ def fashion_model_try():
                             st.error("Something went wrong please try again later")
                             st.stop()
                         print(upload["data"]["s3_uri"])
-                        # machine_learning_pod_address = machine_learning_pod()
-                        machine_learning_pod_address = "69.30.85.26:22165"
-
+                        machine_learning_pod_address = get_address()
+                        # machine_learning_pod_address = "69.30.85.26:22165"
                         if machine_learning_pod_address == "":
                             st.error("Service Not Available, Please try again later")
                             st.stop()
@@ -120,8 +116,8 @@ def fashion_model_try():
                             st.error("Something went wrong please try again later")
                             st.stop()
                         print(st.session_state["login_information"]["response_data"]["data"]["id"])
-                        # machine_learning_pod_address = machine_learning_pod()
-                        machine_learning_pod_address = "69.30.85.26:22165"
+                        machine_learning_pod_address = get_address()
+                        # machine_learning_pod_address = "69.30.85.26:22165"
                         print(machine_learning_pod_address)
                         if machine_learning_pod_address == "":
                             st.error("Service Not Available, Please try again later")
@@ -180,8 +176,7 @@ def fashion_model_try():
                     if not upload["success"]:
                         st.error("Something went wrong please try again later")
                         st.stop()
-                    # machine_learning_pod_address = machine_learning_pod()
-                    machine_learning_pod_address = "69.30.85.26:22165"
+                    machine_learning_pod_address = get_address()
                     if machine_learning_pod_address == "":
                         st.error("Service Not Available, Please try again later")
                         st.stop()

@@ -2,6 +2,7 @@ import uuid
 import streamlit as st
 import requests
 from src.helper.endpoint import COMPLETED_TRAINING_JOBS
+from src.helper.ml_pod_helper import get_address
 
 if "inference" not in st.session_state:
     st.session_state["inference"] = {}
@@ -37,7 +38,8 @@ def inference_on_trained_model(message, training_id):
     random_uuid = uuid.uuid4()
     uuid_string = str(random_uuid).replace('-', '')
     random_string = uuid_string[:12]
-    response = requests.post("https://mlbe.rekogniz.com/v1/concept/",
+    machine_learning_pod_address = get_address()
+    response = requests.post(f"http://{machine_learning_pod_address}/v1/concept/",
                              headers={"verification-key":"cmVrb0duaXpUZWNobm9sb2dpZXNQcmlWYVRlTGlNZXRlZCMjIzEyMzQwOTY4OTY="},
                              json={"id": str(st.session_state["login_information"]["response_data"]["data"]["id"]),
                                    "training_id": training_id,
@@ -65,7 +67,8 @@ def make_inference(message):
     random_uuid = uuid.uuid4()
     uuid_string = str(random_uuid).replace('-', '')
     random_string = uuid_string[:12]
-    response = requests.post("https://mlbe.rekogniz.com/v1/inference/",
+    machine_learning_pod_address = get_address()
+    response = requests.post(f"https://{machine_learning_pod_address}/v1/inference/",
                              headers={
                                  "verification-key": "cmVrb0duaXpUZWNobm9sb2dpZXNQcmlWYVRlTGlNZXRlZCMjIzEyMzQwOTY4OTY="},
                              json={"id": str(st.session_state["login_information"]["response_data"]["data"]["id"]),

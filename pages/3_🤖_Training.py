@@ -350,5 +350,4 @@ def container():
         else:
             past_training_page()
 
-
 container()
