@@ -10,9 +10,6 @@ if "training_info" not in st.session_state:
     st.session_state["training_info"] = {}
 
 
-
-
-
 def model():
     # Just for demonstration, replace with your actual model
     # check for training jobs that have been completed + appended with custom inference
@@ -39,15 +36,22 @@ def inference_on_trained_model(message, training_id):
     random_uuid = uuid.uuid4()
     uuid_string = str(random_uuid).replace('-', '')
     random_string = uuid_string[:12]
-    response = requests.get("http://af18c1ae21c8a449d973b300b323f120-1681068879.ap-south-1.elb.amazonaws.com/api/v1/user/pod-address")
+    response = requests.get(
+        "http://af18c1ae21c8a449d973b300b323f120-1681068879.ap-south-1.elb.amazonaws.com/api/v1/user/pod-address")
     machine_learning_pod_address = response.json()
     machine_learning_pod_address = machine_learning_pod_address["address"]
+    resp = requests.get(
+        "http://af18c1ae21c8a449d973b300b323f120-1681068879.ap-south-1.elb.amazonaws.com/api/v1/training-caption/{}".format(
+            training_id))
+    caption_resp = resp.json()
+
     response = requests.post(f"http://{machine_learning_pod_address}/v1/concept-inference/",
-                             headers={"verification-key":"cmVrb0duaXpUZWNobm9sb2dpZXNQcmlWYVRlTGlNZXRlZCMjIzEyMzQwOTY4OTY="},
+                             headers={
+                                 "verification-key": "cmVrb0duaXpUZWNobm9sb2dpZXNQcmlWYVRlTGlNZXRlZCMjIzEyMzQwOTY4OTY="},
                              json={"id": str(st.session_state["login_information"]["response_data"]["data"]["id"]),
                                    "training_id": training_id,
                                    "request_id": random_string,
-                                   "inference_schema": {"prompt": message,
+                                   "inference_schema": {"prompt": message + ",with " + caption_resp["data"]["caption"],
                                                         "negative_prompt": "",
                                                         "resolution": "1024"
                                                         }
@@ -59,9 +63,10 @@ def inference_on_trained_model(message, training_id):
     x = response.json()
     data = x["data"]["image_path"]
     if data:
-        st.session_state["inference"].update({random_string: {"message": message,
-                                                              "images": data
-                                                              }})
+        st.session_state["inference"].update(
+            {random_string: {"message": message + ",with " + caption_resp["data"]["caption"],
+                             "images": data
+                             }})
     return data
 
 
@@ -132,9 +137,11 @@ def inference():
                                     st.image(data[2], caption='Image 2')
                             progress_bar.progress(100)
                         else:
-                            #find information regarding the training job
+                            # find information regarding the training job
                             st.info("When using custom model trained on dataset please define your Unique Identifier")
-                            inferred_data = inference_on_trained_model(message=message, training_id=st.session_state["training_info"][select])
+                            inferred_data = inference_on_trained_model(message=message,
+                                                                       training_id=st.session_state["training_info"][
+                                                                           select])
                             if inferred_data:
                                 col1, col2, col3 = st.columns(3)
                                 with col1:
