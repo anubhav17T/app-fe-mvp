@@ -48,3 +48,4 @@ urllib3
 zipp==3.18.1
 streamlit-drawable-canvas
 runpod==1.7.2
+streamlit-card
