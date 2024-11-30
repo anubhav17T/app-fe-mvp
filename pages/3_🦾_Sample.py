@@ -4,25 +4,20 @@ from streamlit_card import card
 import requests
 import os
 import base64
-import runpod
+
 current_directory = os.getcwd()
-runpod.api_key = "6MRIL8BDMAUTBIMX6JGVOGJCMGR32PYXI7MHR229"
 
 
 def pod_address():
-    pods = runpod.get_pods()
-    """This function fetch runpod ip address """
-    add = {}
-    for pod in pods:
-        if 'runtime' in pod and pod['runtime']:
-            for port in pod['runtime']['ports']:
-                if port['privatePort'] == 8002:
-                    add.update({"training": f"{port['ip']}:{port['publicPort']}"})
-                elif port['privatePort'] == 8003:
-                    add.update({"demo": f"{port['ip']}:{port['publicPort']}"})
-    if not add:
-        return {"service": "down"}
-    return add
+    headers = {'accept': 'application/json',
+               'Content-Type': 'application/json'}
+    response = requests.get(
+        url="http://af18c1ae21c8a449d973b300b323f120-1681068879.ap-south-1.elb.amazonaws.com/api/v1/user/demo-pod-address",
+        headers=headers
+    )
+    x = response.json()
+    print(x)
+    return x
 
 
 @st.cache_data
@@ -31,11 +26,11 @@ def make_inference(message, api_type):
     uuid_string = str(random_uuid).replace('-', '')
     random_string = uuid_string[:12]
     address = pod_address()
-    if "demo" not in address.keys():
+    if "address" not in address.keys():
         st.error("Service is not available,please try again later")
         st.stop()
     else:
-        machine_learning_pod_address = address["demo"]
+        machine_learning_pod_address = address["address"]
         response = requests.post(f"http://{machine_learning_pod_address}/v1/demo/{api_type}",
                                  headers={
                                      "verification-key": "cmVrb0duaXpUZWNobm9sb2dpZXNQcmlWYVRlTGlNZXRlZCMjIzEyMzQwOTY4OTY="},
@@ -70,7 +65,7 @@ def sample():
             st.switch_page("pages/2_📲_Login.py")
     else:
         # Sample data for cards with local image paths
-        card_data = [current_directory + "/pages/output-lens.jpeg",
+        card_data = [current_directory + "/pages/sample_2.png",
                      current_directory + "/pages/headphone3.png",
                      current_directory + "/pages/sample_1.png",
                      current_directory + "/pages/watches2.png",
@@ -94,7 +89,7 @@ def sample():
         shoes_data = "data:image/png;base64," + encoded_shoes.decode("utf-8")
         watches_data = "data:image/png;base64," + encoded_watch.decode("utf-8")
 
-        col1,col2 = st.columns(2)
+        col1, col2 = st.columns(2)
         with col1:
             lensCard = card(
                 title="",
@@ -155,9 +150,9 @@ def sample():
                         progress_bar.progress(100)
 
             watchesCard = card(
-                        title="",
-                        text="Watch",
-                        image=watches_data)
+                title="",
+                text="Watch",
+                image=watches_data)
             if watchesCard:
                 watch = st.text_input("Type your prompt here", "", key="watch")
                 if st.button("Send", key="send_button3"):
@@ -172,5 +167,6 @@ def sample():
                             st.image(data[1], caption='Image 2')
                             st.image(data[2], caption='Image 2')
                         progress_bar.progress(100)
+
 
 sample()

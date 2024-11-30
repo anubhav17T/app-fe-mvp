@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 
-from src.helper.endpoint import USER_PROFILE, USER_CHANGE_PASSWORD
+from src.helper.endpoint import USER_PROFILE, USER_CHANGE_PASSWORD, USER_INFORMATION
 from src.helper.user_helper import check_password_strength
 
 
@@ -13,6 +13,7 @@ def profile():
         if login:
             st.switch_page("pages/2_📲_Login.py")
     else:
+        st.info(st.session_state["login_information"]["response_data"]["data"]["email"])
         user_data = {
             "first_name": st.session_state["login_information"]["response_data"]["data"]["first_name"],
             "last_name": st.session_state["login_information"]["response_data"]["data"]["last_name"],
@@ -84,9 +85,12 @@ def change_password():
             # Display user information in columns
             col1, col2 = st.columns(2, gap="large")
             with col1:
-                current_password = st.text_input("Current Password", type="password",placeholder="your-current-password")
-                new_password = st.text_input("New Password", key='b', type="password", max_chars=30,placeholder="ThatOneShouldNeverGuess")
-                confirm_password = st.text_input("Confirm Password", type="password", max_chars=30,placeholder="ThatOneShouldNeverGuess")
+                current_password = st.text_input("Current Password", type="password",
+                                                 placeholder="your-current-password")
+                new_password = st.text_input("New Password", key='b', type="password", max_chars=30,
+                                             placeholder="ThatOneShouldNeverGuess")
+                confirm_password = st.text_input("Confirm Password", type="password", max_chars=30,
+                                                 placeholder="ThatOneShouldNeverGuess")
             submit = st.form_submit_button("Update Password")
             if submit:
                 if len(confirm_password) == 0 or len(new_password) == 0:
@@ -107,11 +111,11 @@ def change_password():
                                    st.session_state["login_information"]["response_data"]["access_token"])
                                }
                     response = requests.post(USER_CHANGE_PASSWORD,
-                                              json={"current_password": current_password,
-                                                    "new_password": new_password,
-                                                    "confirm_password": confirm_password
-                                                    }, headers=headers
-                                              )
+                                             json={"current_password": current_password,
+                                                   "new_password": new_password,
+                                                   "confirm_password": confirm_password
+                                                   }, headers=headers
+                                             )
                     x = response.json()
                     if response.status_code == 422:
                         st.error("Please provide details correctly")
@@ -123,3 +127,37 @@ def change_password():
 
 
 change_password()
+
+
+def registered_users_data():
+    if "login_information" in st.session_state.keys():
+        import requests
+        import pandas as pd
+        headers = {'accept': 'application/json',
+                   'Content-Type': 'application/json',
+                   "Authorization": "Bearer {}".format(
+                       st.session_state["login_information"]["response_data"]["access_token"])
+                   }
+        response = requests.get(USER_INFORMATION, headers=headers)
+        if response.status_code != 200:
+            st.error("Not authorised to perform this action")
+            st.stop()
+        else:
+            data = response.json()
+            df = pd.json_normalize(data['data'])
+            st.data_editor(df, disabled=("id", "first_name",
+                                         "last_name", "is_active", "completed_jobs","failed_jobs","remaining_jobs"
+                                         "is_verified", "email",
+                                         "created_on"))
+
+def user_profile():
+    if "login_information" in st.session_state.keys():
+        if st.session_state["login_information"]["response_data"]["data"]["email"] in ["anubhav.tyagi@rekogniz.com",
+                                                                                       "arshdeep.singh@rekogniz.com",
+                                                                                       "aishwary@rekogniz.com",
+                                                                                       "anubhav1tyagi@gmail.com"]:
+            st.subheader("Users Information")
+            registered_users_data()
+
+
+user_profile()
